@@ -14,7 +14,7 @@ class Apple extends ActiveRecord
         # 18000 seconds == 5 hours
         $this->birthdayTime = time() + rand(-36000, 0);
         $this->fallingTime = null;
-        $this->size = 1.0;
+        $this->setSize(1.0);
         $this->status = Apple::STATUS_ON_TREE;
 
         if (is_null($color)) {
@@ -41,12 +41,12 @@ class Apple extends ActiveRecord
         ];
     }
 
-    private function setSize($value)
+    public function setSize($value)
     {
-        $this->size = $value >= 0.0 ? $value : 0.0;
+        $this->size = ($value >= 0.0) ? $value : 0.0;
     }
 
-    private function setStatus($value)
+    public function setStatus($value)
     {
         if ($value !== Apple::STATUS_ON_TREE
             && $value !== Apple::STATUS_ON_GROUND) {
@@ -73,7 +73,7 @@ class Apple extends ActiveRecord
             throw new \Exception("Отрицательный процент", 1);
         }
 
-        $this->size = $newSize;
+        $this->setSize($newSize);
         if ($newSize <= 0.0) {
             $this->delete();
         }
