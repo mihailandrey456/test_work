@@ -103,7 +103,7 @@ class Apple extends ActiveRecord
     {
         # 18000 seconds == 5 hours
         return (!$this->isOnTree()) 
-            && (($this->fallingTime - $this->birthdayTime) >= 18000);
+            && ((time() - $this->fallingTime) >= 18000);
     }
 
     public function isOnTree()
