@@ -6,15 +6,16 @@ use yii\db\ActiveRecord;
 
 class Apple extends ActiveRecord
 {
-    const STATUS_ON_THREE = 0;
+    const STATUS_ON_TREE = 0;
     const STATUS_ON_GROUND = 1;
 
     function __construct($color = null)
     {
-        $this->birthdayTime = time() + rand(-86400 * 10, 86400 * 10);
+        # 18000 seconds == 5 hours
+        $this->birthdayTime = time() + rand(-36000, 0);
         $this->fallingTime = null;
         $this->size = 1.0;
-        $this->status = Apple::STATUS_ON_THREE;
+        $this->status = Apple::STATUS_ON_TREE;
 
         if (is_null($color)) {
             $colors = ['Красный', 'Зеленый', 'Желтый'];
@@ -35,7 +36,7 @@ class Apple extends ActiveRecord
             [['color', 'size', 'status', 'birthdayTime'], 'required'],
             [['birthdayTime', 'fallingTime'], 'integer'],
             ['color', 'string', 'max' => 32],
-            ['status', 'integer', 'min' => Apple::STATUS_ON_THREE, 'max' => Apple::STATUS_ON_GROUND],
+            ['status', 'integer', 'min' => Apple::STATUS_ON_TREE, 'max' => Apple::STATUS_ON_GROUND],
         ];
     }
 
@@ -46,9 +47,9 @@ class Apple extends ActiveRecord
 
     private function setStatus($value)
     {
-        if ($value !== Apple::STATUS_ON_THREE
-            || $value !== Apple::STATUS_ON_GROUND) {
-            throw new Exception("Неизвестный статус", 1);
+        if ($value !== Apple::STATUS_ON_TREE
+            && $value !== Apple::STATUS_ON_GROUND) {
+            throw new \Exception("Неизвестный статус", 1);
         }
 
         $this->status = $value;
@@ -63,10 +64,10 @@ class Apple extends ActiveRecord
     public function eat($percent)
     {
         $newSize = $this->size - ($percent / 100.0);
-        if ($this->status == static::STATUS_ON_THREE) {
-            throw new Exception("Яблоко на дереве", 1);
+        if ($this->status == static::STATUS_ON_TREE) {
+            throw new \Exception("Яблоко на дереве", 1);
         } else if ($this->IsRotten()) {
-            throw new Exception("Яблоко гнилое", 1);
+            throw new \Exception("Яблоко гнилое", 1);
         }
 
         $this->size = $newSize;
@@ -81,14 +82,14 @@ class Apple extends ActiveRecord
     }
 
     /**
-     * Переводит состояние яблока из STATUS_ON_THREE в состояние STATUS_ON_GROUND.
+     * Переводит состояние яблока из STATUS_ON_TREE в состояние STATUS_ON_GROUND.
      * 
      * @throws \Throwable В случае если яблоко уже в состояние STATUS_ON_GROUND.
      */
     public function fallToGround()
     {
-        if ($this->status != Apple::STATUS_ON_THREE) {
-            throw new Exception("Яблоко уже упало", 1);
+        if (!$this->isOnTree()) {
+            throw new \Exception("Яблоко уже упало", 1);
         }
 
         $this->fallingTime = time();
@@ -98,7 +99,27 @@ class Apple extends ActiveRecord
     public function IsRotten()
     {
         # 18000 seconds == 5 hours
-        return ($this->status != Apple::STATUS_ON_THREE) 
+        return (!$this->isOnTree()) 
             && (($this->fallingTime - $this->birthdayTime) >= 18000);
+    }
+
+    public function isOnTree()
+    {
+        return $this->status === Apple::STATUS_ON_TREE;
+    }
+
+    public static function intStatusToString($value)
+    {
+        if ($value !== Apple::STATUS_ON_TREE
+            && $value !== Apple::STATUS_ON_GROUND) {
+            throw new \Exception("Неизвестный статус", 1);
+        }
+
+        $dict = [
+            Apple::STATUS_ON_TREE => 'На дереве',
+            Apple::STATUS_ON_GROUND => 'На земле / упало',
+        ];
+
+        return $dict[$value];
     }
 }

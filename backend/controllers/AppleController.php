@@ -2,6 +2,7 @@
 
 namespace backend\controllers;
 
+use Yii;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -22,7 +23,7 @@ class AppleController extends Controller
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['index', 'generate'],
+                        'actions' => ['index', 'generate', 'delete', 'eat', 'shake-tree'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -32,6 +33,7 @@ class AppleController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'generate' => ['post'],
+                    'delete' => ['post'],
                 ],
             ],
         ];
@@ -66,6 +68,51 @@ class AppleController extends Controller
         for ($i = 0; $i < $count; $i++) {
             $apple = new Apple();
             $apple->save();
+        }
+
+        return $this->redirect(['apple/index']);
+    }
+
+    public function actionDelete($id)
+    {
+        $apple = Apple::findOne($id);
+        if (!is_null($apple)) {
+            $apple->delete();
+            Yii::$app->session->setFlash('success', "Яблоко #$id было удалено из БД.");
+        }
+
+        return $this->redirect(['apple/index']);
+    }
+
+    public function actionEat($id)
+    {
+        $apple = Apple::findOne($id);
+        if (!is_null($apple))
+        {
+            try {
+                $apple->eat(100);
+                Yii::$app->session->setFlash('success', "Яблоко #$id было съедено.");
+            } catch (\Exception $e) {
+                Yii::$app->session->setFlash('error', "Невозможно съесть яблоко #$id. {$e->getMessage()}.");
+            }
+
+        }
+
+        return $this->redirect(['apple/index']);
+    }
+
+    public function actionShakeTree($id)
+    {
+        $apple = Apple::findOne($id);
+        if (!is_null($apple)) {
+            try {
+                $apple->fallToGround();
+                $apple->save();
+                Yii::$app->session->setFlash('success', "Яблоко #$id упало.");
+            } catch (\Exception $e) {
+                Yii::$app->session->setFlash('error', "Невозможно потрясти дерево, чтобы уронить яблоко #$id. {$e->getMessage()}.");
+            }
+
         }
 
         return $this->redirect(['apple/index']);
