@@ -65,9 +65,17 @@ class AppleController extends Controller
     public function actionGenerate()
     {
         $count = rand(1, 10);
+        $failedApplesCount = 0;
         for ($i = 0; $i < $count; $i++) {
             $apple = new Apple();
-            $apple->save();
+            if ($apple->save() === false) {
+                $failedApplesCount++;
+            }
+        }
+
+        Yii::$app->session->setFlash('success', "Сгенерировано яблок:" . ($count - $failedApplesCount) . ".");
+        if ($failedApplesCount != 0) {
+            Yii::$app->session->setFlash('warning', "Количество яблок, которые были не сохранены: $failedApplesCount.");
         }
 
         return $this->redirect(['apple/index']);
@@ -84,14 +92,19 @@ class AppleController extends Controller
         return $this->redirect(['apple/index']);
     }
 
-    public function actionEat($id)
+    public function actionEat($id, $precent)
     {
         $apple = Apple::findOne($id);
         if (!is_null($apple))
         {
             try {
-                $apple->eat(100);
-                Yii::$app->session->setFlash('success', "Яблоко #$id было съедено.");
+                $apple->eat($precent);
+                if ($apple->size == 0.0) {
+                    Yii::$app->session->setFlash('success', "Яблоко #$id было съедено.");
+                } else {
+                    $apple->save();
+                    Yii::$app->session->setFlash('success', "Яблоко #$id было откушено.");
+                }
             } catch (\Exception $e) {
                 Yii::$app->session->setFlash('error', "Невозможно съесть яблоко #$id. {$e->getMessage()}.");
             }

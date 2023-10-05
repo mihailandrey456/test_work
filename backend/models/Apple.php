@@ -37,6 +37,7 @@ class Apple extends ActiveRecord
             [['birthdayTime', 'fallingTime'], 'integer'],
             ['color', 'string', 'max' => 32],
             ['status', 'integer', 'min' => Apple::STATUS_ON_TREE, 'max' => Apple::STATUS_ON_GROUND],
+            ['size', 'double', 'min' => 0.0, 'max' => 1.0],
         ];
     }
 
@@ -68,6 +69,8 @@ class Apple extends ActiveRecord
             throw new \Exception("Яблоко на дереве", 1);
         } else if ($this->IsRotten()) {
             throw new \Exception("Яблоко гнилое", 1);
+        } else if ($percent < 0.0) {
+            throw new \Exception("Отрицательный процент", 1);
         }
 
         $this->size = $newSize;

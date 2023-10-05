@@ -25,33 +25,37 @@ $this->title = 'Apples';
         'dataProvider' => $dataProvider,
         'columns' => [
             'id',
-            'color',
+            'color:text:Цвет',
             [
                 'attribute' => 'size',
+                'label' => 'Сколько осталось от яблока',
                 'value' => function ($data) {
                     return strval($data->size * 100) . '%';
                 },
             ],
             [
                 'attribute' => 'status',
+                'label' => 'Статус',
                 'value' => function($data) {
                     return $data->intStatusToString($data->status);
                 },
             ],
             [
-                'header' => 'Гнилое',
+                'label' => 'Гнилое',
                 'value' => function($data) {
                     return $data->isRotten() ? 'Да' : 'Нет';
                 },
             ],
             [
                 'attribute' => 'birthdayTime',
+                'label' => 'Дата появления',
                 'value' => function($data) {
                     return date('Y-m-d H:i:s', $data->birthdayTime);
                 },
             ],
             [
                 'attribute' => 'fallingTime',
+                'label' => 'Дата падения',
                 'value' => function($data) {
                     return !is_null($data->fallingTime)
                         ? date('Y-m-d H:i:s', $data->fallingTime)
@@ -63,11 +67,6 @@ $this->title = 'Apples';
                 'header' => 'Действия',
                 'controller' => 'apple',
                 'buttons' => [
-                    'eat' => function ($url, $model, $key) {
-                        return !$model->isRotten() && !$model->isOnTree()
-                            ? Html::a('Съесть', $url)
-                            : '';
-                    },
                     'shake-tree' => function($url, $model, $key) {
                         return $model->isOnTree() ? Html::a('Потрясти дерево', $url) : '';
                     },
@@ -75,7 +74,39 @@ $this->title = 'Apples';
                         return Html::a('Удалить', $url, ['data-method' => 'post']);
                     },
                 ],
-                'template' => '{eat} {shake-tree} {delete}',
+                'template' => '{shake-tree} {delete}',
+            ],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'header' => 'Съесть',
+                'controller' => 'apple',
+                'buttons' => [
+                    'eat-25' => function ($url, $model, $key) {
+                        $url = "/index.php?r=apple/eat&id=$key&precent=25";
+                        return !$model->isRotten() && !$model->isOnTree()
+                            ? Html::a('25%', $url)
+                            : '';
+                    },
+                    'eat-50' => function ($url, $model, $key) {
+                        $url = "/index.php?r=apple/eat&id=$key&precent=50";
+                        return !$model->isRotten() && !$model->isOnTree()
+                            ? Html::a('50%', $url)
+                            : '';
+                    },
+                    'eat-75' => function ($url, $model, $key) {
+                        $url = "/index.php?r=apple/eat&id=$key&precent=75";
+                        return !$model->isRotten() && !$model->isOnTree()
+                            ? Html::a('75%', $url)
+                            : '';
+                    },
+                    'eat-100' => function ($url, $model, $key) {
+                        $url = "/index.php?r=apple/eat&id=$key&precent=100";
+                        return !$model->isRotten() && !$model->isOnTree()
+                            ? Html::a('100%', $url)
+                            : '';
+                    },
+                ],
+                'template' => '{eat-25} {eat-50} {eat-75} {eat-100}',
             ],
         ],
     ]); ?>
